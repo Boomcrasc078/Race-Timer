@@ -1,0 +1,66 @@
+﻿
+@implements IDisposable  // Implementerar IDisposable för att frigöra resurser
+
+@if (showTitle)
+{
+    <h3>Stopwatch</h3>
+}
+
+<div>
+    <h1>@formattedTime</h1>  
+    <button class="btn btn-success" @onclick="Start">Start</button>  
+    <button class="btn btn-warning" @onclick="Stop">Stop</button>  
+    <button class="btn btn-danger" @onclick="Reset">Reset</button> 
+</div>
+
+@code {
+    public bool showTitle;
+    private float elapsedTime; // Tid i sekunder med millisekunder
+    private bool isRunning; // Indikerar om stoppuret är aktivt
+    private System.Timers.Timer timer; // Timer för att räkna upp tiden
+
+    // Formaterar tiden till hh:mm:ss.ff för att inkludera millisekunder
+    private string formattedTime => TimeSpan.FromSeconds(elapsedTime).ToString(@"hh\:mm\:ss\.ff");
+
+    // Metod för att starta stoppuret
+    private void Start()
+    {
+        if (!isRunning) // Kontrollera om stoppuret redan är igång
+        {
+            isRunning = true; // Sätt isRunning till true
+            timer = new System.Timers.Timer(10); // Skapa en timer som tickar var 10 millisekund
+            timer.Elapsed += TimerElapsed; // Koppla TimerElapsed-metoden till timer-tick-eventet
+            timer.Start(); // Starta timern
+        }
+    }
+
+    // Metod för att stoppa stoppuret
+    private void Stop()
+    {
+        if (isRunning) // Kontrollera om stoppuret är igång
+        {
+            isRunning = false; // Sätt isRunning till false
+            timer?.Stop(); // Stoppa timern om den är igång
+        }
+    }
+
+    // Metod för att nollställa stoppuret
+    private void Reset()
+    {
+        Stop(); // Stoppa stoppuret innan nollställning
+        elapsedTime = 0; // Sätt elapsedTime till 0
+    }
+
+    // Metod som anropas varje gång timern tickar
+    private void TimerElapsed(object sender, System.Timers.ElapsedEventArgs e)
+    {
+        elapsedTime += 0.01f; // Öka tiden med 0.01 sekunder (10 millisekunder)
+        InvokeAsync(StateHasChanged); // Uppdatera användargränssnittet
+    }
+
+    // Implementerar IDisposable för att frigöra timer-resurser
+    public void Dispose()
+    {
+        timer?.Dispose(); // Frigör timern om den existerar
+    }
+}
