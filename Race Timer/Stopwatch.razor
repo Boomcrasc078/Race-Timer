@@ -1,16 +1,11 @@
 ﻿
 @implements IDisposable  // Implementerar IDisposable för att frigöra resurser
 
-@if (showTitle)
-{
-    <h3>Stopwatch</h3>
-}
-
 <div>
-    <h1>@formattedTime</h1>  
-    <button class="btn btn-success" @onclick="Start">Start</button>  
-    <button class="btn btn-warning" @onclick="Stop">Stop</button>  
-    <button class="btn btn-danger" @onclick="Reset">Reset</button> 
+    <h1 >@formattedTime</h1>
+    @text
+    @ChildContent
+
 </div>
 
 @code {
@@ -21,6 +16,9 @@
 
     // Formaterar tiden till hh:mm:ss.ff för att inkludera millisekunder
     private string formattedTime => TimeSpan.FromSeconds(elapsedTime).ToString(@"hh\:mm\:ss\.ff");
+
+    [Parameter] public string text { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
 
     // Metod för att starta stoppuret
     private void Start()
