@@ -11,11 +11,18 @@
 		}
 
 
-		<Stopwatch @ref="stopwatch"></Stopwatch>
+
+		<Stopwatch @ref="stopwatch" changeButton="ChangeButton"></Stopwatch>
 
 
 
 	</div>
+	<footer>
+		@if (stopwatch.isRunning)
+		{
+			<button class="btn btn-danger btn-race-start" @onclick="ResetStopwatch">Cancel Race</button>
+		}
+	</footer>
 </div>
 
 
@@ -23,9 +30,28 @@
 
 	private Stopwatch stopwatch = new Stopwatch();
 
-	private void StartStopwatch()
+	private async Task StartStopwatch()
 	{
-		stopwatch.Start();
-		stopwatch.hidden = false;
+		await stopwatch.Start();
+		ChangeButton();
+	}
+
+	private void ResetStopwatch()
+	{
+		stopwatch.Reset();
+		ChangeButton();
+	}
+
+	public void ChangeButton()
+	{
+		if (stopwatch.isRunning)
+		{
+			stopwatch.hidden = false;
+		}
+		else
+		{
+			stopwatch.hidden = true;
+		}
+		StateHasChanged();
 	}
 }
