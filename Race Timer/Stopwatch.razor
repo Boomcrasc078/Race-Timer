@@ -1,15 +1,13 @@
-﻿
-@implements IDisposable  // Implementerar IDisposable för att frigöra resurser
+﻿@implements IDisposable
 
-<div>   
+<div>
     <h1>
         @if (!hidden)
         {
             @formattedTime
         }
-        </h1>
-</div> 
-
+    </h1>
+</div>
 
 @code {
     public bool isRunning; // Indikerar om stoppuret är aktivt
@@ -23,16 +21,28 @@
     private DateTime savedTimestamp;
     public float elapsedTime = 0;
 
+    [Inject] private Blazored.LocalStorage.ILocalStorageService localStorage { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Hämta tiden från localStorage när komponenten initieras
+        elapsedTime = await localStorage.GetItemAsync<float>("elapsedTime");
+    }
+
     public void Start()
     {
         savedTimestamp = DateTime.Now; // Spara den aktuella tidpunkten
         elapsedTime = 0; // Återställ förfluten tid
+
+        // Spara den aktuella tidpunkten i localStorage
+        localStorage.SetItemAsync("savedTimestamp", savedTimestamp).GetAwaiter().GetResult();
+
         StartTimer(); // Starta timern
     }
 
     private void StartTimer()
     {
-        timer = new System.Timers.Timer(10); // Timern tickar varje sekund
+        timer = new System.Timers.Timer(10); // Timern tickar var 10:e millisekund
         timer.Elapsed += UpdateElapsedTime; // Koppla metoden som ska köras
         timer.Start(); // Starta timern
     }
@@ -42,11 +52,13 @@
         var timeSpan = DateTime.Now - savedTimestamp; // Beräkna förfluten tid
         elapsedTime = (float)timeSpan.TotalSeconds; // Formatera förfluten tid
         InvokeAsync(StateHasChanged); // Uppdatera UI
+
+        // Spara den förflutna tiden i localStorage
+        localStorage.SetItemAsync("elapsedTime", elapsedTime).GetAwaiter().GetResult();
     }
 
     public void Dispose()
     {
         timer?.Dispose(); // Frigör timern om den existerar
     }
-
 }
