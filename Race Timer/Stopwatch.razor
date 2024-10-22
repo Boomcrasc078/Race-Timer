@@ -1,68 +1,52 @@
 ﻿
 @implements IDisposable  // Implementerar IDisposable för att frigöra resurser
 
-<div>
-    <h1 class="Stopwatch-Time">@formattedTime</h1>
-    @text
-    @ChildContent
-</div>
-
-
-
-    <Race_Timer.Pages.CurrentRace OnButtonClicked="Start"></Race_Timer.Pages.CurrentRace>
+<div>   
+    <h1>
+        @if (!hidden)
+        {
+            @formattedTime
+        }
+        </h1>
+</div> 
 
 
 @code {
-    public bool showTitle;
-    private float elapsedTime; // Tid i sekunder med millisekunder
-    private bool isRunning; // Indikerar om stoppuret är aktivt
-    private System.Timers.Timer timer; // Timer för att räkna upp tiden
+    public bool isRunning; // Indikerar om stoppuret är aktivt
+    private System.Timers.Timer timer = new System.Timers.Timer(); // Timer för att räkna upp tiden
 
     // Formaterar tiden till hh:mm:ss.ff för att inkludera millisekunder
     private string formattedTime => TimeSpan.FromSeconds(elapsedTime).ToString(@"hh\:mm\:ss\.ff");
 
-    [Parameter] public string text { get; set; }
-    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public bool hidden { get; set; } = true;
 
-    // Metod för att starta stoppuret
+    private DateTime savedTimestamp;
+    public float elapsedTime = 0;
+
     public void Start()
     {
-        if (!isRunning) // Kontrollera om stoppuret redan är igång
-        {
-            isRunning = true; // Sätt isRunning till true
-            timer = new System.Timers.Timer(10); // Skapa en timer som tickar var 10 millisekund
-            timer.Elapsed += TimerElapsed; // Koppla TimerElapsed-metoden till timer-tick-eventet
-            timer.Start(); // Starta timern
-        }
+        savedTimestamp = DateTime.Now; // Spara den aktuella tidpunkten
+        elapsedTime = 0; // Återställ förfluten tid
+        StartTimer(); // Starta timern
     }
 
-    // Metod för att stoppa stoppuret
-    private void Stop()
+    private void StartTimer()
     {
-        if (isRunning) // Kontrollera om stoppuret är igång
-        {
-            isRunning = false; // Sätt isRunning till false
-            timer?.Stop(); // Stoppa timern om den är igång
-        }
+        timer = new System.Timers.Timer(10); // Timern tickar varje sekund
+        timer.Elapsed += UpdateElapsedTime; // Koppla metoden som ska köras
+        timer.Start(); // Starta timern
     }
 
-    // Metod för att nollställa stoppuret
-    private void Reset()
+    private void UpdateElapsedTime(object sender, System.Timers.ElapsedEventArgs e)
     {
-        Stop(); // Stoppa stoppuret innan nollställning
-        elapsedTime = 0; // Sätt elapsedTime till 0
+        var timeSpan = DateTime.Now - savedTimestamp; // Beräkna förfluten tid
+        elapsedTime = (float)timeSpan.TotalSeconds; // Formatera förfluten tid
+        InvokeAsync(StateHasChanged); // Uppdatera UI
     }
 
-    // Metod som anropas varje gång timern tickar
-    private void TimerElapsed(object sender, System.Timers.ElapsedEventArgs e)
-    {
-        elapsedTime += 0.01f; // Öka tiden med 0.01 sekunder (10 millisekunder)
-        InvokeAsync(StateHasChanged); // Uppdatera användargränssnittet
-    }
-
-    // Implementerar IDisposable för att frigöra timer-resurser
     public void Dispose()
     {
         timer?.Dispose(); // Frigör timern om den existerar
     }
+
 }
