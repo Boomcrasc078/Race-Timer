@@ -6,18 +6,22 @@
 
 <div>
 	<Stopwatch>
-		Jag är så himla cool<br />
-		<ul>
-			<li>
-				Hej
-			</li>
-			<li>
-				Då
-			</li>
-		</ul>
+		<button class="btn-primary" @onclick="StartStopwatch">
+			Start
+		</button>
 	</Stopwatch>
 </div>
 
 @code {
+
+	[Parameter] public EventCallback OnButtonClicked { get; set; }
+
+	async Task StartStopwatch()
+	{
+		if (OnButtonClicked.HasDelegate)
+		{
+			await OnButtonClicked.InvokeAsync();
+		}
+	}
 
 }

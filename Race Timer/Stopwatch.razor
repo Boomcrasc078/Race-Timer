@@ -2,11 +2,15 @@
 @implements IDisposable  // Implementerar IDisposable för att frigöra resurser
 
 <div>
-    <h1 >@formattedTime</h1>
+    <h1 class="Stopwatch-Time">@formattedTime</h1>
     @text
     @ChildContent
-
 </div>
+
+
+
+    <Race_Timer.Pages.CurrentRace OnButtonClicked="Start"></Race_Timer.Pages.CurrentRace>
+
 
 @code {
     public bool showTitle;
@@ -21,7 +25,7 @@
     [Parameter] public RenderFragment ChildContent { get; set; }
 
     // Metod för att starta stoppuret
-    private void Start()
+    public void Start()
     {
         if (!isRunning) // Kontrollera om stoppuret redan är igång
         {
